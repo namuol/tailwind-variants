@@ -1,4 +1,4 @@
-import resolveConfig from "tailwindcss/resolveConfig";
+import resolveConfig from "@namuol/tailwindcss/resolveConfig";
 
 import {generateTypes} from "./generator";
 
@@ -148,7 +148,7 @@ const transformContent = (tv, screens) => {
   return responsive;
 };
 
-export const tvTransformer = (content, screens) => {
+export const tvTransformer = (content, file, screens) => {
   try {
     // TODO: support package alias
     if (!content.includes("tailwind-variants")) return content;
@@ -203,8 +203,8 @@ export const withTV = (tailwindConfig) => {
   if (isEmpty(config.content?.files) || !isArray(config.content.files)) return config;
 
   // with tailwind configured screens
-  const transformer = (content) => {
-    return tvTransformer(content, Object.keys(config.theme?.screens ?? {}));
+  const transformer = (content, file) => {
+    return tvTransformer(content, file, Object.keys(config.theme?.screens ?? {}));
   };
 
   // custom transform
@@ -223,7 +223,10 @@ export const withTV = (tailwindConfig) => {
   // extend transform function
   if (isFunction(customTransform)) {
     const extensions = getExtensions(config.content.files);
-    const transformEntries = extensions.map((ext) => [ext, pipeline(transformer, customTransform)]);
+    const transformEntries = extensions.map((ext) => [
+      ext,
+      (input, ...rest) => customTransform(transformer(input, ...rest), ...rest),
+    ]);
 
     config.content.transform = Object.fromEntries(transformEntries);
 

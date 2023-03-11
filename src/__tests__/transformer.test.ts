@@ -11,7 +11,7 @@ const defaultScreens = ["sm", "md", "lg", "xl", "2xl"];
 
 const mock: Mock = {
   withTV: withTV,
-  transformer: (content) => `tv transformer: ${tvTransformer(content, defaultScreens)}`,
+  transformer: (content) => `tv transformer: ${tvTransformer(content, undefined, defaultScreens)}`,
 };
 
 const expectedContent = (sourceCode: string, transformed: object[]) => {
@@ -30,7 +30,7 @@ describe("Responsive Variants", () => {
       'const button = tv({ variants: { color: { primary: "text-blue-50 bg-blue-600 rounded" } } });';
     const sourceCode = tvImport.concat(tvComponent);
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       {
@@ -56,7 +56,7 @@ describe("Responsive Variants", () => {
       'const button = tv({ variants: { color: { primary: ["text-blue-50", "bg-blue-600", "rounded"] } } });';
     const sourceCode = tvImport.concat(tvComponent);
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       {
@@ -82,7 +82,7 @@ describe("Responsive Variants", () => {
       'const button = tv({ variants: { color: { primary: [["text-blue-50", "bg-blue-600"], "rounded"] } } });';
     const sourceCode = tvImport.concat(tvComponent);
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       {
@@ -108,7 +108,7 @@ describe("Responsive Variants", () => {
       'const button = tv({ slots: { base: "flex" }, variants: { color: { primary: { base: ["bg-blue-50 text-blue-900", ["dark:bg-blue-900", "dark:text-blue-50"]] } } } });';
     const sourceCode = tvImport.concat(tvComponent);
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       {
