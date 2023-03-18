@@ -1,10 +1,10 @@
-import resolveConfig from "@namuol/tailwindcss/resolveConfig";
+import resolveConfig from "tailwindcss/resolveConfig";
 
 import {generateTypes} from "./generator";
 
 const regExp = {
-  tv: /tv\({[\s\S]*?}\)/g,
-  tvContent: /\({[\s\S]*?}\)/g,
+  tv: /tv\s*\((.*?)\)/gs,
+  tvExtend: /extend:\s*\w+,\s*/,
   comment: /\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm,
   blankLine: /^\s*$(?:\r\n?|\n)/gm,
   extension: /\.\w+/g,
@@ -16,6 +16,8 @@ const isString = (param) => typeof param === "string";
 
 const isObject = (param) => typeof param === "object";
 
+const isBoolean = (param) => typeof param === "boolean";
+
 const isFunction = (param) => typeof param === "function";
 
 const isEmpty = (param) => {
@@ -25,6 +27,20 @@ const isEmpty = (param) => {
   if (isObject(param) && Object.keys(param).length === 0) return true;
 
   return false;
+};
+
+const pickByKeys = (target, keys) => {
+  const result = {};
+  const length = keys.length;
+  const hasOwnProp = Object.prototype.hasOwnProperty;
+
+  for (let i = 0; i < length; i++) {
+    const key = keys[i];
+
+    if (hasOwnProp.call(target, key)) result[key] = target[key];
+  }
+
+  return result;
 };
 
 const printError = (message, error) => {
@@ -44,7 +60,10 @@ const getCleanContent = (content) => {
   const removeComment = content.replace(regExp.comment, "$1").toString();
   const removeBlankLine = removeComment.replace(regExp.blankLine, "").toString();
 
-  return removeBlankLine.match(regExp.tv);
+  // TODO: support inline tv
+  const removeExtend = (match) => match[1].replace(regExp.tvExtend, "").toString();
+
+  return Array.from(removeBlankLine.matchAll(regExp.tv), removeExtend);
 };
 
 const getTVObjects = (content) => {
@@ -57,7 +76,10 @@ const getTVObjects = (content) => {
      * avoid direct eval
      * @see https://esbuild.github.io/content-types/#direct-eval
      */
-    return new Function(`return ${tv.match(regExp.tvContent).toString()}`)();
+    return new Function(`
+      const [options, config] = [${tv.toString()}];
+      return {options, config};
+    `)();
   });
 };
 
@@ -105,11 +127,7 @@ const getVariants = (classNames, screens) => {
   return classNames;
 };
 
-const transformContent = (tv, screens) => {
-  const {variants = {}} = tv;
-
-  if (isEmpty(variants)) return;
-
+const transformVariantsByScreens = (variants, screens) => {
   let responsive = {};
 
   for (const [variantName, variant] of Object.entries(variants)) {
@@ -148,7 +166,44 @@ const transformContent = (tv, screens) => {
   return responsive;
 };
 
-export const tvTransformer = (content, file, screens) => {
+const transformContent = ({options, config}, screens) => {
+  const variants = options?.variants ?? {};
+  const responsiveVariants = config?.responsiveVariants ?? false;
+
+  if (!responsiveVariants || isEmpty(variants)) return;
+
+  // responsiveVariants: true
+  if (isBoolean(responsiveVariants)) {
+    return transformVariantsByScreens(variants, screens);
+  }
+
+  // responsiveVariants: [...]
+  if (isArray(responsiveVariants)) {
+    return transformVariantsByScreens(variants, responsiveVariants);
+  }
+
+  // responsiveVariants: {...}
+  if (isObject(responsiveVariants)) {
+    const onDemand = [];
+
+    for (const [variantName, onDemandConfig] of Object.entries(responsiveVariants)) {
+      if (!onDemandConfig || isEmpty(onDemandConfig)) continue;
+
+      const onDemandVariants = pickByKeys(variants, [variantName]);
+
+      const tv = {
+        options: {variants: onDemandVariants},
+        config: {responsiveVariants: onDemandConfig},
+      };
+
+      onDemand.push(transformContent(tv, screens));
+    }
+
+    return onDemand;
+  }
+};
+
+export const tvTransformer = (content, screens) => {
   try {
     // TODO: support package alias
     if (!content.includes("tailwind-variants")) return content;
@@ -213,7 +268,10 @@ export const withTV = (tailwindConfig) => {
   // extend transform
   if (isEmpty(customTransform)) {
     const extensions = getExtensions(config.content.files);
-    const transformEntries = extensions.map((ext) => [ext, transformer]);
+    const transformEntries = extensions.map((ext) => [
+      ext,
+      (input, ...rest) => customTransform(transformer(input, ...rest), ...rest),
+    ]);
 
     config.content.transform = Object.fromEntries(transformEntries);
 
@@ -223,10 +281,7 @@ export const withTV = (tailwindConfig) => {
   // extend transform function
   if (isFunction(customTransform)) {
     const extensions = getExtensions(config.content.files);
-    const transformEntries = extensions.map((ext) => [
-      ext,
-      (input, ...rest) => customTransform(transformer(input, ...rest), ...rest),
-    ]);
+    const transformEntries = extensions.map((ext) => [ext, pipeline(transformer, customTransform)]);
 
     config.content.transform = Object.fromEntries(transformEntries);
 
