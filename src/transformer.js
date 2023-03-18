@@ -1,4 +1,4 @@
-import resolveConfig from "tailwindcss/resolveConfig";
+import resolveConfig from "@namuol/tailwindcss/resolveConfig";
 
 import {generateTypes} from "./generator";
 
