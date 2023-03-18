@@ -1,6 +1,6 @@
 {
   "name": "tailwind-variants",
-  "version": "0.0.31",
+  "version": "0.1.1",
   "description": "🦄 Tailwindcss first-class variant API",
   "author": "Junior Garcia <jrgarciadev@gmail.com>",
   "license": "MIT",
@@ -35,12 +35,11 @@
     "test": "jest --verbose"
   },
   "dependencies": {
-    "tailwind-merge": "^1.8.1"
+    "tailwind-merge": "^1.10.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.2.0",
     "@commitlint/config-conventional": "^17.2.0",
-    "@namuol/tailwindcss": "3.2.9",
     "@swc-node/jest": "^1.5.2",
     "@swc/cli": "0.1.57",
     "@swc/core": "1.2.198",
@@ -64,14 +63,15 @@
     "prettier": "^2.2.1",
     "prettier-eslint": "^12.0.0",
     "prettier-eslint-cli": "^5.0.1",
+    "tailwindcss": "^3.2.7",
     "ts-node": "^10.9.1",
     "tslib": "^2.4.1",
-    "tsup": "6.4.0",
-    "typescript": "4.6.2",
+    "tsup": "6.6.3",
+    "typescript": "4.9.5",
     "webpack": "^5.53.0"
   },
   "peerDependencies": {
-    "@namuol/tailwindcss": "*"
+    "tailwindcss": "*"
   },
   "keywords": [
     "tailwindcss",
