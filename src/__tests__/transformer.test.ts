@@ -201,7 +201,7 @@ describe("Responsive Variants", () => {
       );
     `;
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       {
@@ -238,7 +238,7 @@ describe("Responsive Variants", () => {
       );
     `;
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       [
@@ -279,7 +279,7 @@ describe("Responsive Variants", () => {
       );
     `;
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       null,
