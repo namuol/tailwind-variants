@@ -1,4 +1,4 @@
-import resolveConfig from "tailwindcss/resolveConfig";
+import resolveConfig from "@namuol/tailwindcss/resolveConfig";
 
 import {generateTypes} from "./generator";
 
@@ -47,7 +47,7 @@ const printError = (message, error) => {
   const newIssueLink = "https://github.com/nextui-org/tailwind-variants/issues/new/choose";
 
   /* eslint-disable no-console */
-  console.log("\x1b[31m%s\x1b[0m", `${message}: ${error.message}`);
+  console.log("\x1b[31m%s\x1b[0m", `${message}: ${error.message} ${error.stack}`);
   console.log(`If you think this is an issue, please submit it at ${newIssueLink}`);
   /* eslint-enable no-console */
 };
@@ -127,7 +127,7 @@ const getVariants = (classNames, screens) => {
   return classNames;
 };
 
-const transformVariantsByScreens = (variants, screens) => {
+const transformVariantsByScreens = (variants, file, screens) => {
   let responsive = {};
 
   for (const [variantName, variant] of Object.entries(variants)) {
@@ -166,7 +166,7 @@ const transformVariantsByScreens = (variants, screens) => {
   return responsive;
 };
 
-const transformContent = ({options, config}, screens) => {
+const transformContent = ({options, config}, file, screens) => {
   const variants = options?.variants ?? {};
   const responsiveVariants = config?.responsiveVariants ?? false;
 
@@ -174,12 +174,12 @@ const transformContent = ({options, config}, screens) => {
 
   // responsiveVariants: true
   if (isBoolean(responsiveVariants)) {
-    return transformVariantsByScreens(variants, screens);
+    return transformVariantsByScreens(variants, file, screens);
   }
 
   // responsiveVariants: [...]
   if (isArray(responsiveVariants)) {
-    return transformVariantsByScreens(variants, responsiveVariants);
+    return transformVariantsByScreens(variants, file, responsiveVariants);
   }
 
   // responsiveVariants: {...}
@@ -203,7 +203,7 @@ const transformContent = ({options, config}, screens) => {
   }
 };
 
-export const tvTransformer = (content, screens) => {
+export const tvTransformer = (content, file, screens) => {
   try {
     // TODO: support package alias
     if (!content.includes("tailwind-variants")) return content;
@@ -213,7 +213,7 @@ export const tvTransformer = (content, screens) => {
     if (isEmpty(tvs)) return content;
 
     const transformed = JSON.stringify(
-      tvs.map((tv) => transformContent(tv, screens)),
+      tvs.map((tv) => transformContent(tv, file, screens)),
       undefined,
       2,
     );
@@ -258,8 +258,8 @@ export const withTV = (tailwindConfig) => {
   if (isEmpty(config.content?.files) || !isArray(config.content.files)) return config;
 
   // with tailwind configured screens
-  const transformer = (content) => {
-    return tvTransformer(content, Object.keys(config.theme?.screens ?? {}));
+  const transformer = (content, file) => {
+    return tvTransformer(content, file, Object.keys(config.theme?.screens ?? {}));
   };
 
   // custom transform
@@ -268,7 +268,10 @@ export const withTV = (tailwindConfig) => {
   // extend transform
   if (isEmpty(customTransform)) {
     const extensions = getExtensions(config.content.files);
-    const transformEntries = extensions.map((ext) => [ext, transformer]);
+    const transformEntries = extensions.map((ext) => [
+      ext,
+      (input, ...rest) => customTransform(transformer(input, ...rest), ...rest),
+    ]);
 
     config.content.transform = Object.fromEntries(transformEntries);
 

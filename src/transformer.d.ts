@@ -1,5 +1,5 @@
-import type {Config} from "tailwindcss/types/config";
-import type {DefaultTheme} from "tailwindcss/types/generated/default-theme";
+import type {Config} from "@namuol/tailwindcss/types/config";
+import type {DefaultTheme} from "@namuol/tailwindcss/types/generated/default-theme";
 
 export type DefaultScreens = keyof DefaultTheme["screens"];
 
@@ -10,7 +10,7 @@ export type WithTV = {
 export declare const withTV: WithTV;
 
 export type TVTransformer = {
-  (content: string, screens?: string[] | DefaultScreens[]): string;
+  (content: string, file?: string, screens?: string[] | DefaultScreens[]): string;
 };
 
 export declare const tvTransformer: TVTransformer;

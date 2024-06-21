@@ -11,7 +11,7 @@ const defaultScreens = ["sm", "md", "lg", "xl", "2xl"];
 
 const mock: Mock = {
   withTV: withTV,
-  transformer: (content) => `tv transformer: ${tvTransformer(content, defaultScreens)}`,
+  transformer: (content) => `tv transformer: ${tvTransformer(content, undefined, defaultScreens)}`,
 };
 
 const expectedContent = (sourceCode: string, transformed: (object | null)[]) => {
@@ -42,7 +42,7 @@ describe("Responsive Variants", () => {
       );
     `;
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       {
@@ -80,7 +80,7 @@ describe("Responsive Variants", () => {
       );
     `;
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       {
@@ -118,7 +118,7 @@ describe("Responsive Variants", () => {
       );
     `;
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       {
@@ -161,7 +161,7 @@ describe("Responsive Variants", () => {
       );
     `;
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       {
@@ -201,7 +201,7 @@ describe("Responsive Variants", () => {
       );
     `;
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       {
@@ -238,7 +238,7 @@ describe("Responsive Variants", () => {
       );
     `;
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       [
@@ -279,7 +279,7 @@ describe("Responsive Variants", () => {
       );
     `;
 
-    const result = tvTransformer(sourceCode, defaultScreens);
+    const result = tvTransformer(sourceCode, undefined, defaultScreens);
 
     const transformedContent = [
       null,
